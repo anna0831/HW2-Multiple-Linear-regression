@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appliances Energy Prediction | CRISP-DM Multiple Linear Regression</title>
+  <meta name="description" content="CRISP-DM 家電耗電量預測與多元線性迴歸特徵選取互動式視覺化儀表板 - Anna ML Studio">
+  <!-- Google Fonts: Google Sans / Roboto / Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="anna-logo">
+          <span class="g-blue">A</span><span class="g-red">n</span><span class="g-yellow">n</span><span class="g-green">a</span>
+          <span style="font-weight: 500; color: #5f6368; margin-left: 6px; font-size: 18px;">ML Studio</span>
+        </div>
+        <div class="header-divider"></div>
+        <div class="app-title-group">
+          <h1>
+            Appliances Energy Prediction
+            <span class="badge-tag">CRISP-DM</span>
+          </h1>
+        </div>
+      </div>
+      <div class="header-meta">
+        <span class="meta-chip chip-success">
+          <span class="dot-indicator"></span>
+          模型訓練完成
+        </span>
+        <span class="meta-chip">19,735 筆資料 (每10分鐘)</span>
+        <span class="meta-chip">3-Fold 時序交叉驗證</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs-bar">
+    <div class="tabs-container">
+      <button class="nav-tab active" data-tab="tab-overview">
+        <span>📊</span> 評估總覽與對比 (Overview)
+      </button>
+      <button class="nav-tab" data-tab="tab-selection">
+        <span>📈</span> 特徵選擇探索器 (RMSE vs. k)
+      </button>
+      <button class="nav-tab" data-tab="tab-simulator">
+        <span>🎛️</span> 多元線性迴歸即時推論 (ML Simulator)
+      </button>
+      <button class="nav-tab" data-tab="tab-diagnostics">
+        <span>🔬</span> 迴歸係數與診斷 (Diagnostics)
+      </button>
+      <button class="nav-tab" data-tab="tab-context">
+        <span>🏠</span> 住宅感測器與氣候背景 (Context)
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- 1. TAB: Overview & Model Comparison -->
+    <section id="tab-overview" class="tab-pane active">
+      <!-- KPI Metric Cards Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-label">
+            <span>最佳模型特徵數 (Selected Features)</span>
+            <span>⭐ F-test</span>
+          </div>
+          <div class="kpi-value">8 <span class="kpi-unit">/ 30 個</span></div>
+          <div class="kpi-footer">
+            <span class="kpi-delta good">-73.3%</span>
+            <span>顯著降低模型複雜度與維度</span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-green">
+          <div class="kpi-label">
+            <span>交叉驗證 CV RMSE (Wh)</span>
+            <span>Time-Series 3-Fold</span>
+          </div>
+          <div class="kpi-value">66.97 <span class="kpi-unit">Wh</span></div>
+          <div class="kpi-footer">
+            <span class="kpi-delta good">-0.87 Wh</span>
+            <span>優於 Baseline (67.84 Wh)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-purple">
+          <div class="kpi-label">
+            <span>測試集決定係數 (Test R²)</span>
+            <span>獨立 20% 測試集</span>
+          </div>
+          <div class="kpi-value">0.546 <span class="kpi-unit">(54.6%)</span></div>
+          <div class="kpi-footer">
+            <span class="kpi-delta neutral">Adjusted R²: 0.545</span>
+            <span>預測 t+1 耗電變異能力</span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-yellow">
+          <div class="kpi-label">
+            <span>測試集平均絕對誤差 (MAE)</span>
+            <span>Test MAE</span>
+          </div>
+          <div class="kpi-value">27.53 <span class="kpi-unit">Wh</span></div>
+          <div class="kpi-footer">
+            <span class="kpi-delta neutral">MSE: 3,760.35</span>
+            <span>測試期: 2016-04-30 ~ 05-27</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison Card: Selected vs Baseline -->
+      <div class="g-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2>🏆 最終選定模型 (Selected Model) vs. 全特徵基準 (Baseline)</h2>
+            <p class="card-subtitle">依據 CRISP-DM 第五階段，在完全未參與特徵篩選與訓練的 20% 獨立時間序列測試集上進行評估</p>
+          </div>
+        </div>
+        <div class="comparison-table-wrapper">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>模型名稱</th>
+                <th>使用特徵數 (k)</th>
+                <th>測試集 RMSE (Wh)</th>
+                <th>測試集 MAE (Wh)</th>
+                <th>測試集 R²</th>
+                <th>校正後 Adjusted R²</th>
+                <th>評價</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="badge-model badge-winner">
+                    <span>⭐</span> Selected Model (F-test 最優子集)
+                  </span>
+                </td>
+                <td><strong>8</strong> (已剔除 22 個次要/雜訊特徵)</td>
+                <td><strong>61.32</strong></td>
+                <td>27.53</td>
+                <td>0.5463</td>
+                <td><strong>0.5454</strong></td>
+                <td><span class="meta-chip chip-success">最佳平衡、泛化力最強</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="badge-model badge-baseline">All Features Baseline</span>
+                </td>
+                <td>30 (使用所有感測與氣象欄位)</td>
+                <td>61.25</td>
+                <td>26.82</td>
+                <td>0.5474</td>
+                <td>0.5439</td>
+                <td><span class="meta-chip">特徵冗餘、存在過度配適風險</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CRISP-DM Stepper Card -->
+      <div class="g-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2>🔄 CRISP-DM 資料探勘標準流程實踐</h2>
+            <p class="card-subtitle">跨越商業問題至模型部署的完整生命週期</p>
+          </div>
+        </div>
+        <div class="stepper-container">
+          <div class="step-item">
+            <div class="step-num">Phase 1</div>
+            <div class="step-title">商業理解</div>
+            <div class="step-desc">提前 10 分鐘預測家電能耗，支援家庭能源管理系統（HEMS）與智慧電網削峰填谷。</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">Phase 2</div>
+            <div class="step-title">資料理解</div>
+            <div class="step-desc">解析比利時低耗能住宅 19,735 筆 10 分鐘環境感測與能耗數據，檢視缺失值與相關矩陣。</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">Phase 3</div>
+            <div class="step-title">資料準備</div>
+            <div class="step-desc">嚴謹時間序列切分 (80/20)、構建正餘弦週期編碼、建立 lag-1 自迴歸項並剔除 rv1/rv2 隨機雜訊。</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">Phase 4</div>
+            <div class="step-title">模型建立</div>
+            <div class="step-desc">執行 5 種特徵選擇演算法（F-test, Lasso, RFE, RF, MI），配合外層 TimeSeriesSplit 評估 k=1~30。</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">Phase 5</div>
+            <div class="step-title">模型評估</div>
+            <div class="step-desc">在保留的 3,947 筆測試集上檢驗，F-test k=8 達成 Adjusted R² 0.5454，顯著超越全特徵模型。</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">Phase 6</div>
+            <div class="step-title">模型部署</div>
+            <div class="step-desc">匯出 joblib 模型管線、生成可重複執行之診斷腳本與現代化互動推論儀表板。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. TAB: Feature Selection Explorer -->
+    <section id="tab-selection" class="tab-pane">
+      <div class="g-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2>📈 特徵篩選演算法收斂曲線 (Feature Count vs. CV RMSE)</h2>
+            <p class="card-subtitle">點選下方按鈕可即時切換各特徵選取方法的比較曲線，拖曳滑桿可查看對應特徵組合</p>
+          </div>
+          <div class="filter-toolbar">
+            <button class="filter-btn active" data-method="F-test">🔵 F-test (勝出)</button>
+            <button class="filter-btn active" data-method="Random Forest">🟢 Random Forest</button>
+            <button class="filter-btn active" data-method="Lasso">🟠 Lasso</button>
+            <button class="filter-btn active" data-method="RFE">🔴 RFE</button>
+            <button class="filter-btn active" data-method="Mutual Information">🟣 Mutual Info</button>
+            <button class="filter-btn" data-method="all">顯示全部</button>
+          </div>
+        </div>
+
+        <div class="chart-container-large">
+          <canvas id="featureSelectionChart"></canvas>
+        </div>
+
+        <!-- Slider for k -->
+        <div class="slider-control-box">
+          <div class="slider-label">
+            <span>當前檢視特徵數 (k):</span>
+          </div>
+          <input type="range" id="kSlider" class="k-slider" min="1" max="30" value="8" step="1">
+          <span id="kValueBadge" class="slider-badge">k = 8</span>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">當前 k 個入選特徵清單 (依重要度排序)：</h4>
+          <div id="activeFeaturesContainer" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. TAB: Live ML Simulator -->
+    <section id="tab-simulator" class="tab-pane">
+      <div class="simulator-layout">
+        <!-- Controls Column -->
+        <div class="g-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h2>🎛️ 多元線性迴歸即時推論器 (Live Inference Simulator)</h2>
+              <p class="card-subtitle">調整 8 個入選特徵的輸入數值，即時透過真實迴歸係數計算未來 10 分鐘耗電量</p>
+            </div>
+          </div>
+
+          <!-- Presets -->
+          <div class="presets-group">
+            <span style="font-size: 13px; font-weight: 600; align-self: center;">情境預設：</span>
+            <button class="preset-chip" data-preset="night">🌙 寒冬深夜 (離峰低能耗)</button>
+            <button class="preset-chip" data-preset="morning">☕ 早晨起居 (開啟部分電器)</button>
+            <button class="preset-chip" data-preset="cooking">🍳 晚間下廚 (尖峰耗電)</button>
+            <button class="preset-chip" data-preset="spring">☀️ 晚春舒適午後 (自然採光通風)</button>
+          </div>
+
+          <!-- Inputs Grid -->
+          <div class="inputs-grid">
+            <!-- 1. appliances_current -->
+            <div class="input-card">
+              <div class="input-header">
+                <span class="input-title">當前用電量 (appliances_current)</span>
+                <span id="val_appliances_current" class="input-val-display">60 Wh</span>
+              </div>
+              <input type="range" id="sim_appliances_current" class="input-slider" min="10" max="800" value="60" step="10">
+              <div class="input-hint"><span>10 Wh (待機)</span><span>800 Wh (滿載)</span></div>
+            </div>
+
+            <!-- 2. hour -->
+            <div class="input-card">
+              <div class="input-header">
+                <span class="input-title">一天時刻 (Hour of Day)</span>
+                <span id="val_hour" class="input-val-display">17:00</span>
+              </div>
+              <input type="range" id="sim_hour" class="input-slider" min="0" max="23.5" value="17" step="0.5">
+              <div class="input-hint"><span>00:00 (子夜)</span><span>23:30 (深夜)</span></div>
+            </div>
+
+            <!-- 3. lights -->
+            <div class="input-card">
+              <div class="input-header">
+                <span class="input-title">室內照明燈耗電 (lights)</span>
+                <span id="val_lights" class="input-val-display">10 Wh</span>
+              </div>
+              <input type="range" id="sim_lights" class="input-slider" min="0" max="70" value="10" step="5">
+              <div class="input-hint"><span>0 Wh (全熄)</span><span>70 Wh (全開)</span></div>
+            </div>
+
+            <!-- 4. RH_out -->
+            <div class="input-card">
+              <div class="input-header">
+                <span class="input-title">室外相對濕度 (RH_out)</span>
+                <span id="val_RH_out" class="input-val-display">82 %</span>
+              </div>
+              <input type="range" id="sim_RH_out" class="input-slider" min="30" max="100" value="82" step="1">
+              <div class="input-hint"><span>30% (乾燥)</span><span>100% (陰雨飽和)</span></div>
+            </div>
+
+            <!-- 5. T2 客廳溫度 -->
+            <div class="input-card">
+              <div class="input-header">
+                <span class="input-title">客廳溫度 (T2, Living Room)</span>
+                <span id="val_T2" class="input-val-display">20.5 °C</span>
+              </div>
+              <input type="range" id="sim_T2" class="input-slider" min="15" max="28" value="20.5" step="0.1">
+              <div class="input-hint"><span>15°C (偏冷)</span><span>28°C (偏暖)</span></div>
+            </div>
+
+            <!-- 6. T6 北側外牆溫度 -->
+            <div class="input-card">
+              <div class="input-header">
+                <span class="input-title">北側外牆溫度 (T6, North Outside)</span>
+                <span id="val_T6" class="input-val-display">6.5 °C</span>
+              </div>
+              <input type="range" id="sim_T6" class="input-slider" min="-5" max="25" value="6.5" step="0.5">
+              <div class="input-hint"><span>-5°C (寒冬冰點)</span><span>25°C (溫暖)</span></div>
+            </div>
+
+            <!-- 7. T3 洗衣房溫度 -->
+            <div class="input-card">
+              <div class="input-header">
+                <span class="input-title">洗衣房溫度 (T3, Laundry Room)</span>
+                <span id="val_T3" class="input-val-display">21.8 °C</span>
+              </div>
+              <input type="range" id="sim_T3" class="input-slider" min="16" max="28" value="21.8" step="0.1">
+              <div class="input-hint"><span>16°C</span><span>28°C</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Column -->
+        <div class="gauge-panel">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-secondary);">預測未來 10 分鐘家電耗電量 (ŷ)</h3>
+            <div class="pred-display-large">
+              <span id="predNumber" class="pred-number">88.5</span>
+              <span class="pred-unit">Wh</span>
+            </div>
+            <div>
+              <span id="predStatus" class="pred-status-pill status-normal">正常日常用電 (Normal)</span>
+            </div>
+          </div>
+
+          <!-- Feature Breakdown Waterfall -->
+          <div>
+            <h4 style="font-size: 13px; font-weight: 600; text-align: left; margin-bottom: 8px;">各特徵邊際貢獻量 (Contribution Breakdown)：</h4>
+            <div id="contribContainer" class="contribution-list"></div>
+          </div>
+
+          <!-- Live Math Formula -->
+          <div class="formula-card">
+            <div style="font-weight: 600; margin-bottom: 4px; color: var(--google-blue);">迴歸公式即時計算式：</div>
+            <div id="formulaMath">ŷ = 98.03 + ...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. TAB: Coefficients & Diagnostics -->
+    <section id="tab-diagnostics" class="tab-pane">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <!-- Coefficients Chart -->
+        <div class="g-card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h2>⚖️ 標準化迴歸係數 (Standardized Beta Coefficients)</h2>
+              <p class="card-subtitle">衡量各變數在去除量綱後的相對影響力大小（綠色正向促進，紅色抑制）</p>
+            </div>
+          </div>
+          <div style="height: 320px;">
+            <canvas id="coefficientsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Actual vs Predicted Time-Series Preview -->
+        <div class="g-card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h2>📉 測試集實際值 vs. 模型預測曲線</h2>
+              <p class="card-subtitle">抽樣 100 筆測試集區間進行實際觀測值與模型配適值之時序追蹤</p>
+            </div>
+          </div>
+          <div style="height: 320px;">
+            <canvas id="timeSeriesChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostic Images Gallery -->
+      <div class="g-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2>🔍 模型殘差與統計假設診斷 (Residual Diagnostics)</h2>
+            <p class="card-subtitle">驗證常態分佈、同質變異數與殘差獨立性</p>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: white; text-align: center;">
+            <h4 style="font-size: 13px; margin-bottom: 8px;">實際值 vs. 預測值散佈圖</h4>
+            <img src="results/actual_vs_predicted.png" alt="Actual vs Predicted" style="max-width: 100%; border-radius: 6px;">
+          </div>
+          <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: white; text-align: center;">
+            <h4 style="font-size: 13px; margin-bottom: 8px;">殘差 vs. 配適值圖 (檢查異質變異)</h4>
+            <img src="results/residuals_vs_fitted.png" alt="Residuals vs Fitted" style="max-width: 100%; border-radius: 6px;">
+          </div>
+          <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: white; text-align: center;">
+            <h4 style="font-size: 13px; margin-bottom: 8px;">殘差常態 Q-Q 圖</h4>
+            <img src="results/residual_qq.png" alt="Residual Q-Q Plot" style="max-width: 100%; border-radius: 6px;">
+          </div>
+          <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: white; text-align: center;">
+            <h4 style="font-size: 13px; margin-bottom: 8px;">殘差隨時間序列分佈圖</h4>
+            <img src="results/residuals_over_time.png" alt="Residuals Over Time" style="max-width: 100%; border-radius: 6px;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. TAB: Sensors & Architecture Context -->
+    <section id="tab-context" class="tab-pane">
+      <div class="g-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2>🏠 住宅感測器配置與空間架構</h2>
+            <p class="card-subtitle">比利時 Stambruges 低能耗被動式住宅空間感測節點分析</p>
+          </div>
+        </div>
+
+        <div class="sensor-map-grid">
+          <!-- Highlight North Wall -->
+          <div class="sensor-card highlight-north">
+            <div class="sensor-icon">🧭</div>
+            <div class="sensor-body">
+              <h4>T6, RH_6 — 北側外牆 (Outside North) ⭐ 關鍵特徵</h4>
+              <p><strong>無太陽直射光照（常態背陽陰影區）</strong>。避免了東南西面日光照射外殼導致虛高 5°C~15°C 之輻射干擾，提供真實未受日照失真的建築外圍冷空氣微氣候，是建築冬季熱散失最顯著的邊界。</p>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="sensor-icon">🛋️</div>
+            <div class="sensor-body">
+              <h4>T2, RH_2 — 客廳 (Living Room)</h4>
+              <p>家庭活動最頻繁核心區域，溫濕度直接反映住戶起居狀態與通風調節，入選 8 個核心特徵之一。</p>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="sensor-icon">🧺</div>
+            <div class="sensor-body">
+              <h4>T3, RH_3 — 洗衣房 (Laundry Room)</h4>
+              <p>洗衣機、烘衣機等大功率用電設備所在地，運轉時具有顯著的產熱升溫效應，入選 8 個核心特徵之一。</p>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="sensor-icon">🍳</div>
+            <div class="sensor-body">
+              <h4>T1, RH_1 — 廚房 (Kitchen)</h4>
+              <p>電磁爐、烤箱、冰箱等烹飪家電所在地，烹飪時段產生明顯局部熱點。</p>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="sensor-icon">💻</div>
+            <div class="sensor-body">
+              <h4>T4, RH_4 — 辦公書房 (Office Room)</h4>
+              <p>電腦螢幕、伺服器等常態低功耗電子設備放置處。</p>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="sensor-icon">🛁</div>
+            <div class="sensor-body">
+              <h4>T5, RH_5 — 浴室 (Bathroom)</h4>
+              <p>熱水器運作與淋浴時會產生劇烈濕度峰值與短暫高溫。</p>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="sensor-icon">🛏️</div>
+            <div class="sensor-body">
+              <h4>T7, T8, T9 — 熨燙室 / 次臥 / 主臥</h4>
+              <p>睡眠與靜態休息空間，溫度由中央暖氣恆溫控制，波動相對較小。</p>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="sensor-icon">🌦️</div>
+            <div class="sensor-body">
+              <h4>Chièvres 機場氣象測站 (Weather Station)</h4>
+              <p>每小時更新並內插提供室外氣溫 (T_out)、大氣壓力 (Press_mm_hg)、室外相對濕度 (RH_out)、風速 (Windspeed) 與能見度 (Visibility)。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Climate Context Card -->
+      <div class="g-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2>🌦️ 實驗期間氣候與季節背景</h2>
+            <p class="card-subtitle">2016 年 1 月 11 日至 2016 年 5 月 27 日（共 137 天）氣候統計</p>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div style="background: var(--surface-subtle); padding: 16px; border-radius: var(--radius-md);">
+            <div style="font-size: 12px; color: var(--text-secondary);">季節跨度</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 4px 0;">深冬至晚春</div>
+            <div style="font-size: 12px; color: var(--text-tertiary);">涵蓋比利時最冷月份至初夏轉暖期</div>
+          </div>
+          <div style="background: var(--surface-subtle); padding: 16px; border-radius: var(--radius-md);">
+            <div style="font-size: 12px; color: var(--text-secondary);">室外平均氣溫</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--google-blue); margin: 4px 0;">7.41 °C</div>
+            <div style="font-size: 12px; color: var(--text-tertiary);">最低 -5.0°C，75% 時間低於 10.4°C</div>
+          </div>
+          <div style="background: var(--surface-subtle); padding: 16px; border-radius: var(--radius-md);">
+            <div style="font-size: 12px; color: var(--text-secondary);">室外平均濕度</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--google-green); margin: 4px 0;">79.75 %</div>
+            <div style="font-size: 12px; color: var(--text-tertiary);">典型西歐海洋性氣候，陰雨頻繁</div>
+          </div>
+          <div style="background: var(--surface-subtle); padding: 16px; border-radius: var(--radius-md);">
+            <div style="font-size: 12px; color: var(--text-secondary);">平均風速</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--google-purple); margin: 4px 0;">4.04 m/s</div>
+            <div style="font-size: 12px; color: var(--text-tertiary);">最高達 14 m/s (7 級風)，加速建築對流散熱</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>Appliances Energy Prediction Interactive Dashboard • Designed by Anna • CRISP-DM Machine Learning Project</p>
+    <p style="margin-top: 4px; font-size: 11px;">Dataset: UCI Appliances Energy Prediction • Model: Standardized Multiple Linear Regression Pipeline</p>
+  </footer>
+
+  <!-- Data and Application Script -->
+  <script src="results_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
