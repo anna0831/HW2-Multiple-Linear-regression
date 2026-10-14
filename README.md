@@ -1,6 +1,6 @@
 # Appliances Energy Prediction (CRISP-DM Multiple Linear Regression)
 
-> 國立中央大學 / 機械學習作業 HW2: 多元線性迴歸與特徵選取（CRISP-DM 標準流程）
+> 國立中興大學 / 機器學習作業 HW2: 多元線性迴歸與特徵選取（CRISP-DM 標準流程）
 > 互動式視覺化展示頁面：[GitHub Pages 網址](https://anna0831.github.io/HW2-Multiple-Linear-regression/)
 
 ---
