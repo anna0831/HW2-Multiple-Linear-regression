@@ -1,4 +1,4 @@
-const APP_DATA = {
+window.APP_DATA = {
   "cvSummary": [
     {
       "method": "All Features Baseline",
