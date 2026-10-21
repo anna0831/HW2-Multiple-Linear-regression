@@ -1,8 +1,24 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.py"
+      "source": "/api/dataset/preview",
+      "destination": "/api/dataset/preview"
+    },
+    {
+      "source": "/api/preview",
+      "destination": "/api/preview"
+    },
+    {
+      "source": "/api/train",
+      "destination": "/api/train"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/api",
+      "destination": "/api/index"
     }
   ]
 }

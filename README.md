@@ -2,6 +2,7 @@
 
 > 國立中興大學 / 智慧物聯網作業 HW2: 多元線性迴歸與特徵選取（CRISP-DM 標準流程 + 兩大加分功能）
 > 🌐 線上部署網址 (Vercel Live URL)：[https://hw-2-multiple-linear-regression-c65.vercel.app/](https://hw-2-multiple-linear-regression-c65.vercel.app/)
+> 👤 學生資訊：許雁婷 (學號: 7115056153)
 
 ---
 
