@@ -32,8 +32,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def vercel_path_normalizer(request: Request, call_next):
+    # Normalize path if Vercel passes rewritten destination path
+    path = request.scope.get("path", "")
+    for prefix in ("/api/index.py", "/index.py"):
+        if path.startswith(prefix):
+            path = path[len(prefix):]
+            if not path.startswith("/"):
+                path = "/" + path
+            request.scope["path"] = path
+            break
+    return await call_next(request)
+
 @app.get("/api/health")
 @app.get("/health")
+@app.get("/api")
+@app.get("/api/")
 def health_check():
     return {
         "status": "ok",

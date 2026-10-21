@@ -1,7 +1,7 @@
 # Appliances & Multi-Problem Linear Regression Studio (CRISP-DM Lab)
 
 > 國立中興大學 / 智慧物聯網作業 HW2: 多元線性迴歸與特徵選取（CRISP-DM 標準流程 + 兩大加分功能）
-> 互動式視覺化儀表板：支援 Vercel 雲端全端部署與本機單一指令啟動
+> 🌐 線上部署網址 (Vercel Live URL)：[https://hw-2-multiple-linear-regression-c65.vercel.app/](https://hw-2-multiple-linear-regression-c65.vercel.app/)
 
 ---
 
