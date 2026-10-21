@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+energydata_complete.csv
+7115056153_hw2.ipynb
+7115056153_hw2.pdf
+7115056153_hw2.py
+7115056153_hw2.zip
+gpt_dialogue.html
+gpt_dialogue.pdf
+report.html
+tests/
+scratch/
+.git/
