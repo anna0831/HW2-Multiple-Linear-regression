@@ -33,6 +33,7 @@ app.add_middleware(
 )
 
 @app.get("/api/health")
+@app.get("/health")
 def health_check():
     return {
         "status": "ok",
@@ -42,6 +43,7 @@ def health_check():
     }
 
 @app.post("/api/dataset/preview")
+@app.post("/dataset/preview")
 async def api_preview_dataset(request: Request):
     try:
         content_type = request.headers.get("content-type", "")
@@ -85,6 +87,7 @@ async def api_preview_dataset(request: Request):
         raise HTTPException(status_code=500, detail=f"預覽資料集發生錯誤: {str(e)}")
 
 @app.post("/api/train")
+@app.post("/train")
 async def api_train_model(request: Request):
     try:
         content_type = request.headers.get("content-type", "")
