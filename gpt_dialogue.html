@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>AI 協作與 GPT 對話過程紀錄 - AIoT HW2</title>
+  <style>
+    @page { size: A4; margin: 18mm 16mm; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", sans-serif; line-height: 1.6; font-size: 10pt; color: #202124; margin: 0; padding: 0; }
+    .header { border-bottom: 2px solid #1a73e8; padding-bottom: 10px; margin-bottom: 20px; }
+    h1 { font-size: 18pt; color: #1a73e8; margin: 0 0 6px 0; }
+    .meta { font-size: 9pt; color: #5f6368; }
+    .message-box { margin-bottom: 16px; border-radius: 8px; padding: 12px 14px; page-break-inside: avoid; }
+    .user-box { background: #e8f0fe; border-left: 4px solid #1a73e8; }
+    .assistant-box { background: #f8f9fa; border-left: 4px solid #34a853; }
+    .sender { font-weight: 700; margin-bottom: 4px; font-size: 9.5pt; }
+    .sender.user { color: #1a73e8; }
+    .sender.assistant { color: #1e8e3e; }
+    pre { background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #dadce0; font-family: monospace; font-size: 8.5pt; overflow-x: auto; white-space: pre-wrap; }
+    code { font-family: monospace; font-size: 8.5pt; background: #eef0f2; padding: 1px 4px; border-radius: 3px; }
+    ul { margin: 6px 0 6px 20px; padding: 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>AI 協作與 GPT 對話過程紀錄 (AI-Assisted Engineering Log)</h1>
+    <div class="meta">
+      <strong>課程：</strong>國立中興大學 智慧物聯網 (AIoT HW2) | <strong>學號：</strong>7115056153 | <strong>姓名：</strong>許雁婷 (Anna)<br>
+      <strong>工具與導出：</strong>Chrome DevTools / pdfCrowd 格式標準導出
+    </div>
+  </div>
+
+  <div class="message-box user-box">
+    <div class="sender user">🧑‍💻 學生 (Prompt 1) - CRISP-DM 流程與多特徵選擇管線規劃</div>
+    <div>
+      我們正在進行家電能耗（Appliances Energy Prediction）的多元線性迴歸專案。請遵循 CRISP-DM 六大流程，協助規劃特徵工程（時序正弦餘弦日週循環、Lag-1 自迴歸項）、設計 5 大特徵選擇演算法（F-test, Lasso, RFE, Random Forest, Mutual Information）以 TimeSeriesSplit 交叉驗證進行比較，並推導預測圖所要求的 95% 信賴區間與預測區間。
+    </div>
+  </div>
+
+  <div class="message-box assistant-box">
+    <div class="sender assistant">🤖 AI 助理 (Response 1)</div>
+    <div>
+      已為您規劃完整架構：
+      <ul>
+        <li><strong>時序無外洩原則：</strong>嚴格以時間先後 80/20 劃分訓練與測試集，並使用 <code>TimeSeriesSplit(n_splits=3)</code> 進行外層交叉驗證。</li>
+        <li><strong>週期性特徵：</strong>利用 $\sin(2\pi t/24)$ 與 $\cos(2\pi t/24)$ 解析 24 小時作息循環；Lag-1 自迴歸項直接捕捉短期慣性。</li>
+        <li><strong>5 大篩選法：</strong>比對統計檢定 (F-test)、正則化 (LassoCV)、遞歸消除 (RFE)、樹不純度 (Random Forest) 與資訊熵 (Mutual Information)。</li>
+        <li><strong>區間推導：</strong>計算殘差標準誤 $s_e = \sqrt{	ext{MSE}}$，求得 95% 預測區間為 $\hat{y} \pm 1.96 s_e$，95% 平均值信賴區間為 $\hat{y} \pm 1.96 rac{s_e}{\sqrt{n}}$。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="message-box user-box">
+    <div class="sender user">🧑‍💻 學生 (Prompt 2) - 前端儀表板圖表空白 Bug 除錯</div>
+    <div>
+      在 Anna ML Studio 互動儀表板中，特徵選擇探索器與 Diagnostics 畫布皆呈現空白。已知 <code>results_data.js</code> 最外層是 <code>const APP_DATA = { ... }</code>，而 <code>app.js</code> 讀取 <code>window.APP_DATA</code>。請協助修復並檢驗。
+    </div>
+  </div>
+
+  <div class="message-box assistant-box">
+    <div class="sender assistant">🤖 AI 助理 (Response 2)</div>
+    <div>
+      <strong>根本原因定位：</strong>在瀏覽器標準腳本載入下，最外層的 <code>const</code> 宣告屬於 Script 宣告環境，不會自動建立為全域物件 <code>window</code> 的屬性，導致 <code>window.APP_DATA</code> 為 <code>undefined</code>，圖表初始化函式直接提前返回。<br>
+      <strong>修復動作：</strong>將 <code>results_data.js</code> 第 1 行改為 <code>window.APP_DATA = {</code>，完整保留 2,410 行現有數據。經 Chrome Headless 實機測試，驗收標準 <code>window.APP_DATA?.cvSummary?.length</code> 回傳 151，<code>typeof Chart</code> 回傳 "function"，所有圖表與滑桿互動已完全正常運作！
+    </div>
+  </div>
+
+  <div class="message-box user-box">
+    <div class="sender user">🧑‍💻 學生 (Prompt 3) - NotebookLM 比較研究與作業打包整合</div>
+    <div>
+      請依作業要求整理 NotebookLM 研讀摘要（100字以上），對比網路上主流解法（XGBoost, LightGBM, LSTM）與多元線性迴歸之優劣，並生成符合命名規範的繳交文件與壓縮包。
+    </div>
+  </div>
+
+  <div class="message-box assistant-box">
+    <div class="sender assistant">🤖 AI 助理 (Response 3)</div>
+    <div>
+      已整理好完整規範：
+      <ul>
+        <li><strong>主程式：</strong><code>7115056153_hw2.py</code> 及 <code>7115056153_hw2.ipynb</code>。</li>
+        <li><strong>報告檔：</strong><code>7115056153_hw2.pdf</code>（含完整 CRISP-DM、圖表、NotebookLM 摘要與演算法比較）。</li>
+        <li><strong>對話檔：</strong>本紀錄 <code>gpt_dialogue.pdf</code>。</li>
+        <li><strong>壓縮包：</strong>一鍵產出 <code>7115056153_hw2.zip</code> 供上傳。</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
